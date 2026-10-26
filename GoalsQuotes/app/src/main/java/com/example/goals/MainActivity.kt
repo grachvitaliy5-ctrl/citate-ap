@@ -25,11 +25,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
 class MainActivity : ComponentActivity() {
-    override fun onResume() {
-        super.onResume()
-        getSystemService(android.app.NotificationManager::class.java).cancelAll()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (Build.VERSION.SDK_INT >= 33 &&
