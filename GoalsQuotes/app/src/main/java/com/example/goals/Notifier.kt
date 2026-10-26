@@ -5,7 +5,9 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
+import android.content.BroadcastReceiver
 import android.content.Intent
+import android.graphics.drawable.Icon
 
 object Notifier {
     private const val CHANNEL = "reminders"
@@ -36,6 +38,12 @@ object Notifier {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
+        val id = if (kind == "goals") 1 else 2
+        val done = PendingIntent.getBroadcast(
+            ctx, 200 + id, Intent(ctx, DoneReceiver::class.java).putExtra("id", id),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
         val n = Notification.Builder(ctx, CHANNEL)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle(if (kind == "goals") "Мои цели" else "Цитата")
@@ -43,9 +51,23 @@ object Notifier {
             .setStyle(Notification.BigTextStyle().bigText(body))
             .setCategory(Notification.CATEGORY_REMINDER)
             .setContentIntent(open)
-            .setAutoCancel(true)
+            .setAutoCancel(false)
+            .setOngoing(true)
+            .addAction(
+                Notification.Action.Builder(
+                    Icon.createWithResource(ctx, android.R.drawable.ic_menu_close_clear_cancel),
+                    "Прочитано", done
+                ).build()
+            )
             .build()
 
-        nm.notify(if (kind == "goals") 1 else 2, n)
+        nm.notify(id, n)
+    }
+}
+
+class DoneReceiver : BroadcastReceiver() {
+    override fun onReceive(ctx: Context, intent: Intent) {
+        ctx.getSystemService(NotificationManager::class.java)
+            .cancel(intent.getIntExtra("id", 0))
     }
 }
